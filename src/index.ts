@@ -1,5 +1,8 @@
 import * as PIXI from 'pixi.js'
 import { AssetManager } from './core/asset-manager.core';
+import { GameMap } from './map/map.map';
+import { StaticTile } from './map/tile/static-tile.map';
+import { Pos2 } from './util/Pos2';
 
 const app = new PIXI.Application({
     width: 1000,
@@ -8,14 +11,22 @@ const app = new PIXI.Application({
     view: document.getElementById('game-canvas') as HTMLCanvasElement,
 });
 
-let assetManager = new AssetManager();
-assetManager.loadAllAssets().then(() => {
-    const dude = new PIXI.Sprite(assetManager.getAsset("golf", "background_blue"));
-    dude.anchor.set(0.5);
 
-    // move the sprite to the center of the screen
-    dude.x = app.screen.width / 2;
-    dude.y = app.screen.height / 2;
+(async () => {
+    let assetManager = new AssetManager();
+    await assetManager.loadAllAssets();
 
-    app.stage.addChild(dude);
-});
+    let tiles: StaticTile[] = [];
+
+    tiles.push(new StaticTile(assetManager.getAsset("golf", "background_blue"), new Pos2(0, 0)).constructTile());
+    tiles.push(new StaticTile(assetManager.getAsset("golf", "background_blue"), new Pos2(128, 0)).constructTile());
+    tiles.push(new StaticTile(assetManager.getAsset("golf", "background_green"), new Pos2(64, 0)).constructTile());
+    tiles.push(new StaticTile(assetManager.getAsset("golf", "background_green"), new Pos2(192, 0)).constructTile());
+
+    tiles.push(new StaticTile(assetManager.getAsset("golf", "background_green"), new Pos2(0, 64)).constructTile());
+    tiles.push(new StaticTile(assetManager.getAsset("golf", "background_green"), new Pos2(128, 64)).constructTile());
+    tiles.push(new StaticTile(assetManager.getAsset("golf", "background_blue"), new Pos2(64, 64)).constructTile());
+    tiles.push(new StaticTile(assetManager.getAsset("golf", "background_blue"), new Pos2(192, 64)).constructTile());
+
+    new GameMap(tiles, []).constructScene(app.stage);
+})();
