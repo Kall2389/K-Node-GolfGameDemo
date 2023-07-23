@@ -1,5 +1,5 @@
 import { Sprite, Texture } from "pixi.js";
-import { Pos2 } from "../../util/Pos2";
+import { Pos2 } from "../../util/position.util";
 
 export class MapTile {
     private _texture: Texture;

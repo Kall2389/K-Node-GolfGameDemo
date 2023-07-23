@@ -1,8 +1,6 @@
 import * as PIXI from 'pixi.js'
 import { AssetManager } from './core/asset-manager.core';
 import { GameLevel, loadGameLevel } from './map/level.map';
-import { StaticTile } from './map/tile/static-tile.map';
-import { Pos2 } from './util/position.util';
 
 const app = new PIXI.Application({
     width: 1000,
