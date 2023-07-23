@@ -1,8 +1,8 @@
 import * as PIXI from 'pixi.js'
 import { AssetManager } from './core/asset-manager.core';
-import { GameMap } from './map/map.map';
+import { GameLevel, loadGameLevel } from './map/level.map';
 import { StaticTile } from './map/tile/static-tile.map';
-import { Pos2 } from './util/Pos2';
+import { Pos2 } from './util/position.util';
 
 const app = new PIXI.Application({
     width: 1000,
@@ -16,17 +16,19 @@ const app = new PIXI.Application({
     let assetManager = new AssetManager();
     await assetManager.loadAllAssets();
 
-    let tiles: StaticTile[] = [];
-
-    tiles.push(new StaticTile(assetManager.getAsset("golf", "background_blue"), new Pos2(0, 0)).constructTile());
-    tiles.push(new StaticTile(assetManager.getAsset("golf", "background_blue"), new Pos2(128, 0)).constructTile());
-    tiles.push(new StaticTile(assetManager.getAsset("golf", "background_green"), new Pos2(64, 0)).constructTile());
-    tiles.push(new StaticTile(assetManager.getAsset("golf", "background_green"), new Pos2(192, 0)).constructTile());
-
-    tiles.push(new StaticTile(assetManager.getAsset("golf", "background_green"), new Pos2(0, 64)).constructTile());
-    tiles.push(new StaticTile(assetManager.getAsset("golf", "background_green"), new Pos2(128, 64)).constructTile());
-    tiles.push(new StaticTile(assetManager.getAsset("golf", "background_blue"), new Pos2(64, 64)).constructTile());
-    tiles.push(new StaticTile(assetManager.getAsset("golf", "background_blue"), new Pos2(192, 64)).constructTile());
-
-    new GameMap(tiles, []).constructScene(app.stage);
+    let level: GameLevel = loadGameLevel(JSON.parse(`{
+        "spawnPos":{"x":4,"y":4},
+        "levelIndex":0,
+        "hasWalls":true,
+        "staticTiles":[
+            ["golf:background_blue", "golf:background_blue", "golf:background_blue", "golf:background_blue", "golf:background_blue"],
+            ["golf:background_blue", "golf:background_blue", "golf:background_blue", "golf:background_blue", "golf:background_blue"],
+            ["golf:background_blue", "golf:background_blue", "golf:background_green", "golf:background_blue", "golf:background_blue"],
+            ["golf:background_blue", "golf:background_blue", "golf:background_blue", "golf:background_blue", "golf:background_blue"],
+            ["golf:background_blue", "golf:background_blue", "golf:background_blue", "golf:background_blue", "golf:background_blue"]
+        ],
+        "dynamicTiles":[]
+    }`))!;
+    console.log(level)
+    level.constructScene(app.stage);
 })();

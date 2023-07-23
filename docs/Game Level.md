@@ -22,3 +22,24 @@ Description: `A 2D array denoting the tilemap for the static tiles.`
 Serialized: `["..."]["..."]`
 Object: `WorldTilemap<>`
 Description: `A 2D array denoting the tilemap for the dynamic tiles.`
+
+
+
+
+
+
+#### Note: Use \"null" as a non-existing tile.
+
+```json
+{
+	"spawnPos":{"x":4,"y":4},
+	"levelIndex":0,
+	"hasWalls":true,
+	"staticTiles":[
+		["golf:background_blue", "golf:background_blue", "golf:background_blue"],
+		["golf:background_blue", "null", "golf:background_blue"],
+		["golf:background_blue", "golf:background_blue", "golf:background_blue"]
+	],
+	"dynamicTiles":[]
+}
+```
