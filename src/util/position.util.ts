@@ -30,4 +30,8 @@ export class Pos2 {
     toString(): string {
         return "[Pos2 object] x:" + (this._x) + " y:" + (this._y);
     }
+
+    toJson(): any {
+        return {"x":this._x, "y":this._y};
+    }
 }
