@@ -1,6 +1,8 @@
 import { Texture } from "pixi.js"
 import { logger, Level } from "../logger/logger";
 
+let assetManager: AssetManager = undefined!;
+
 export class AssetManager {
     private assets: Texture[];
     private assetIndex: Map<String, number>;
@@ -19,6 +21,8 @@ export class AssetManager {
         await this.loadAsset("assets/golf/background_blue.png");
         await this.loadAsset("assets/golf/background_brown.png");
         await this.loadAsset("assets/golf/background_green.png");
+
+        assetManager = this;
     }
 
     /*
@@ -51,5 +55,20 @@ export class AssetManager {
         let query: string = namespace + ":" + id; // generate the query key for the hashmap
 
         return this.assets[this.getAssetIndex(query)]; // return the texture through a safe function
+    }
+
+    getAssetQuery(query: string): Texture {
+        return this.assets[this.getAssetIndex(query)]; // return the texture through a safe function
+    }
+
+    /*
+     * Returns the instance of the asset manager.
+     */
+    public static i(): AssetManager {
+        return assetManager;
+    }
+
+    public static getDefaultAssetWidth(): number {
+        return 64;
     }
 }
