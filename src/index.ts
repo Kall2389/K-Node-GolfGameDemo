@@ -29,8 +29,19 @@ const app = new PIXI.Application({
             ["golf:background_blue", "golf:background_blue", "golf:background_blue", "golf:background_blue", "golf:background_blue"],
             ["golf:background_blue", "golf:background_blue", "golf:background_blue", "golf:background_blue", "golf:background_blue"]
         ],
-        "dynamicTiles":[]
+        "dynamicTiles":[
+            ["null"],
+            ["null", "null", "null", "start_indicator"],
+            ["null"],
+            ["null"],
+            ["null"],
+            ["null"],
+            ["null", "end_hole"]
+        ]
     }`))!;
     
     level.constructScene(app.stage);
+    let ticker = PIXI.Ticker.shared;
+    ticker.start();
+    ticker.add(() => { level.updateAllSprites() });
 })();

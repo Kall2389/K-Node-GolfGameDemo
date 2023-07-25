@@ -4,6 +4,14 @@ import { StaticTile } from "./tile/static-tile.map";
 import { Pos2 } from "../util/position.util";
 import { AssetManager } from "../core/asset-manager.core";
 import { Level, logger } from "../logger/logger";
+import { DT_EndHole } from "./tile/impl/end-hole.map";
+import { MapTile } from "./tile/tile.map";
+import { container } from "webpack";
+import { DT_StartIndicator } from "./tile/impl/start-indicator.map";
+
+const DYN_TILE_TO_CLASS = 
+    {"start_indicator":""}
+;
 
 export class GameLevel {
     private _staticTiles: StaticTile[];
@@ -29,11 +37,10 @@ export class GameLevel {
 
     constructScene(stage: Container<DisplayObject>): void {
         this.generateStaticTileContainer();
-        
-        this._staticTileContainer.x = 64;
-        this._staticTileContainer.y = 64;
+        this.generateDynamicTileContainer();
 
         stage.addChild(this._staticTileContainer);
+        stage.addChild(this._dynamicTileContainer);
     }
 
     private generateStaticTileContainer(): void {
@@ -46,12 +53,26 @@ export class GameLevel {
         this._staticTileContainer = container;
     }
 
+    private generateDynamicTileContainer(): void {
+        let container: Container = new Container();
+
+        this._dynamicTiles.forEach((tile: DynamicTile) => {
+            container.addChild(tile.sprite);
+        });
+
+        this._dynamicTileContainer = container;
+    }
+
     public get hasWalls(): boolean {
         return this._hasWalls;
     }
 
     public get spawnPoint(): Pos2 {
         return this._ballSpawn;
+    }
+
+    updateAllSprites(): void {
+        this._dynamicTiles.forEach((tile: DynamicTile) => tile.update(this));
     }
 }
 
@@ -98,6 +119,7 @@ function hasGoodLevelIntegrity(gameLevelJson: any): boolean {
 
 /*
  * Private function for the actual method parsing a level JSON, and constructing that into an object.
+ * Code in this function can be unsafe as it's all caught by a try/catch on method call (this is bad practice).
  */
 function createGameLevelObject(gameLevelJson: any): GameLevel {
     // loop through 2d array, generate all sprites in rows and set appropriate pos
@@ -111,10 +133,10 @@ function createGameLevelObject(gameLevelJson: any): GameLevel {
         row.forEach((assetId: string) => {
             if(assetId != "null") {
                 staticSprites.push(
-                    StaticTile.create(
+                    new StaticTile(
                         AssetManager.i().getAssetQuery(assetId),
                         new Pos2(j * AssetManager.getDefaultAssetWidth(), i * AssetManager.getDefaultAssetWidth())
-                    ).constructTile()
+                    )
                 );
             }
             j++;
@@ -123,7 +145,32 @@ function createGameLevelObject(gameLevelJson: any): GameLevel {
     // the `staticSprites` variable is now populated
 
     // TODO: Load dynamic sprites
+    let levelDynSprites: [] = gameLevelJson["dynamicTiles"];
     let dynamicSprites: DynamicTile[] = [];
+
+    console.log(levelDynSprites)
+    for(let i: number = 0; i < levelDynSprites.length; i++) {
+        let row: string[] = levelDynSprites[i];
+        let j = 0;
+        // for every `assetId`, check if null, if so just increment `j` (x value), otherwise construct sprite based off `assetId`
+        
+        row.forEach((assetId: string) => {
+            if(assetId != "null") {
+                let newTile: DynamicTile | undefined = undefined;
+                switch(assetId.toLowerCase()) {
+                    case "start_indicator": newTile = new DT_StartIndicator(new Pos2(j * AssetManager.getDefaultAssetWidth(), i * AssetManager.getDefaultAssetWidth())); break;
+                    case "end_hole": newTile = new DT_EndHole(new Pos2(j * AssetManager.getDefaultAssetWidth(), i * AssetManager.getDefaultAssetWidth())); break;
+                }
+
+
+
+                if(newTile != undefined) dynamicSprites.push(newTile);
+                else throw new Error(); // stop loading level - load file is incorrect
+            }
+            j++;
+        });
+    }
+
     // the `dynamicSprites` variable is now populated
 
     // load other two fields
