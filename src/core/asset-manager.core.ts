@@ -21,6 +21,8 @@ export class AssetManager {
         await this.loadAsset("assets/golf/background_blue.png");
         await this.loadAsset("assets/golf/background_brown.png");
         await this.loadAsset("assets/golf/background_green.png");
+        await this.loadAsset("assets/golf/hole_start.png");
+        await this.loadAsset("assets/golf/hole_small_end_alt.png");
 
         assetManager = this;
     }
