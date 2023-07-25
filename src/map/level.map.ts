@@ -10,12 +10,11 @@ export class GameLevel {
     private _dynamicTiles: DynamicTile[];
 
     private _hasWalls: boolean;
+    private _ballSpawn: Pos2;
 
     private _staticTileContainer: Container;
     private _dynamicTileContainer: Container;
     private _wallContainer: Container;
-
-    private _ballSpawn: Pos2;
 
     constructor(_staticTiles: StaticTile[], _dynamicTiles: DynamicTile[], _hasWalls: boolean, _ballSpawn: Pos2) {
         this._staticTiles = _staticTiles;
@@ -45,6 +44,14 @@ export class GameLevel {
         });
 
         this._staticTileContainer = container;
+    }
+
+    public get hasWalls(): boolean {
+        return this._hasWalls;
+    }
+
+    public get spawnPoint(): Pos2 {
+        return this._ballSpawn;
     }
 }
 
