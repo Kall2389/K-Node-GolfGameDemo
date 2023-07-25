@@ -7,7 +7,5 @@ import { Pos2 } from "../../util/position.util";
  */
 
 export class StaticTile extends MapTile {
-    public static create(tex: Texture, pos: Pos2): StaticTile {
-        return new StaticTile(tex, pos);
-    }
+    
 }

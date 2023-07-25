@@ -12,6 +12,8 @@ export class MapTile {
         this._position = pos;
 
         this._sprite = undefined;
+
+        this.constructTile();
     }
 
     /*
