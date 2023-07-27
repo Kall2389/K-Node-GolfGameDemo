@@ -4,14 +4,8 @@ import { StaticTile } from "./tile/static-tile.map";
 import { Pos2 } from "../util/position.util";
 import { AssetManager } from "../core/asset-manager.core";
 import { Level, logger } from "../logger/logger";
-import { DT_EndHole } from "./tile/impl/end-hole.map";
-import { MapTile } from "./tile/tile.map";
-import { container } from "webpack";
-import { DT_StartIndicator } from "./tile/impl/start-indicator.map";
+import { MapTileInstantiator } from "./tile/tile-instantiator.map";
 
-const DYN_TILE_TO_CLASS = 
-    {"start_indicator":""}
-;
 
 export class GameLevel {
     private _staticTiles: StaticTile[];
@@ -133,10 +127,7 @@ function createGameLevelObject(gameLevelJson: any): GameLevel {
         row.forEach((assetId: string) => {
             if(assetId != "null") {
                 staticSprites.push(
-                    new StaticTile(
-                        AssetManager.i().getAssetQuery(assetId),
-                        new Pos2(j * AssetManager.getDefaultAssetWidth(), i * AssetManager.getDefaultAssetWidth())
-                    )
+                    MapTileInstantiator.static(assetId, new Pos2(j * AssetManager.getDefaultAssetWidth(), i * AssetManager.getDefaultAssetWidth()))
                 );
             }
             j++;
@@ -157,12 +148,7 @@ function createGameLevelObject(gameLevelJson: any): GameLevel {
         row.forEach((assetId: string) => {
             if(assetId != "null") {
                 let newTile: DynamicTile | undefined = undefined;
-                switch(assetId.toLowerCase()) {
-                    case "start_indicator": newTile = new DT_StartIndicator(new Pos2(j * AssetManager.getDefaultAssetWidth(), i * AssetManager.getDefaultAssetWidth())); break;
-                    case "end_hole": newTile = new DT_EndHole(new Pos2(j * AssetManager.getDefaultAssetWidth(), i * AssetManager.getDefaultAssetWidth())); break;
-                }
-
-
+                newTile = MapTileInstantiator.dynamic(assetId, new Pos2(j * AssetManager.getDefaultAssetWidth(), i * AssetManager.getDefaultAssetWidth()));
 
                 if(newTile != undefined) dynamicSprites.push(newTile);
                 else throw new Error(); // stop loading level - load file is incorrect
