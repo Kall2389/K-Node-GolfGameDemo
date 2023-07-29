@@ -1,40 +1,51 @@
 import { Container, DisplayObject } from "pixi.js";
 import { DynamicTile } from "./tile/dynamic-tile.map";
 import { StaticTile } from "./tile/static-tile.map";
-import { Pos2 } from "../util/position.util";
+import { Vec2 } from "../util/vector.util";
 import { AssetManager } from "../core/asset-manager.core";
 import { Level, logger } from "../logger/logger";
 import { MapTileInstantiator } from "./tile/tile-instantiator.map";
+import { GamePlayer } from "../core/player/player.player";
 
 
 export class GameLevel {
+    private _stage: Container<DisplayObject>;
+    private _player: GamePlayer;
+
     private _staticTiles: StaticTile[];
     private _dynamicTiles: DynamicTile[];
 
     private _hasWalls: boolean;
-    private _ballSpawn: Pos2;
+    private _ballSpawn: Vec2;
 
     private _staticTileContainer: Container;
     private _dynamicTileContainer: Container;
     private _wallContainer: Container;
 
-    constructor(_staticTiles: StaticTile[], _dynamicTiles: DynamicTile[], _hasWalls: boolean, _ballSpawn: Pos2) {
+    constructor(stage: Container<DisplayObject>, _staticTiles: StaticTile[], _dynamicTiles: DynamicTile[], _hasWalls: boolean, _ballSpawn: Vec2) {
+        this._stage = stage;
+
         this._staticTiles = _staticTiles;
         this._dynamicTiles = _dynamicTiles;
         this._hasWalls = _hasWalls;
-        this._ballSpawn = _ballSpawn;
+        this._ballSpawn = _ballSpawn.multVec(new Vec2(64, 64)).addVec(new Vec2(32, 32)); // center the ball in the square
+        console.log(this._ballSpawn.toString());
 
         this._staticTileContainer = undefined!;
         this._dynamicTileContainer = undefined!;
         this._wallContainer = undefined!;
+
+        this._player = new GamePlayer(AssetManager.i().getAssetQuery("golf:ball_blue_small"), this._ballSpawn, this._stage);
     }
 
-    constructScene(stage: Container<DisplayObject>): void {
+    constructScene(): void {
         this.generateStaticTileContainer();
         this.generateDynamicTileContainer();
 
-        stage.addChild(this._staticTileContainer);
-        stage.addChild(this._dynamicTileContainer);
+        this._stage.addChild(this._staticTileContainer);
+        this._stage.addChild(this._dynamicTileContainer);
+
+        this._stage.addChild(this._player.sprite);
     }
 
     private generateStaticTileContainer(): void {
@@ -61,35 +72,46 @@ export class GameLevel {
         return this._hasWalls;
     }
 
-    public get spawnPoint(): Pos2 {
+    public get spawnPoint(): Vec2 {
         return this._ballSpawn;
+    }
+
+    public get stage() {
+        return this._stage;
     }
 
     updateAllSprites(): void {
         this._dynamicTiles.forEach((tile: DynamicTile) => tile.update(this));
+
+        this._player.update(this);
+    }
+
+
+
+
+
+
+    /*
+     * Constructs a game level object. Only returns a `GameLevel` object if level loaded successfully.
+     */
+    public static create(stage: Container<DisplayObject>, gameLevelJson: any): GameLevel | undefined {
+        if(!hasGoodLevelIntegrity(gameLevelJson)) {
+            logger(Level.ERROR, "Unable to load game level: Bad level integrity.");
+            return undefined;
+        }
+    
+        try {
+            let level: GameLevel = createGameLevelObject(stage, gameLevelJson);
+            logger(Level.DEBUG, "Successfully loaded game level object.");
+            return level;
+        } catch(ex) {
+            logger(Level.ERROR, "Unable to load game level: Could not construct `GameLevel` object.");
+            return undefined;
+        }
     }
 }
 
 
-
-/*
- * Constructs a game level object. Only returns a `GameLevel` object if level loaded successfully.
- */
-export function loadGameLevel(gameLevelJson: any): GameLevel | undefined {
-    if(!hasGoodLevelIntegrity(gameLevelJson)) {
-        logger(Level.ERROR, "Unable to load game level: Bad level integrity.");
-        return undefined;
-    }
-
-    try {
-        let level: GameLevel = createGameLevelObject(gameLevelJson);
-        logger(Level.DEBUG, "Successfully loaded game level object.");
-        return level;
-    } catch(ex) {
-        logger(Level.ERROR, "Unable to load game level: Could not construct `GameLevel` object.");
-        return undefined;
-    }
-}
 
 
 
@@ -115,7 +137,7 @@ function hasGoodLevelIntegrity(gameLevelJson: any): boolean {
  * Private function for the actual method parsing a level JSON, and constructing that into an object.
  * Code in this function can be unsafe as it's all caught by a try/catch on method call (this is bad practice).
  */
-function createGameLevelObject(gameLevelJson: any): GameLevel {
+function createGameLevelObject(stage: Container<DisplayObject>, gameLevelJson: any): GameLevel {
     // loop through 2d array, generate all sprites in rows and set appropriate pos
     let levelBoard: [] = gameLevelJson["staticTiles"];
     let staticSprites: StaticTile[] = [];
@@ -127,7 +149,7 @@ function createGameLevelObject(gameLevelJson: any): GameLevel {
         row.forEach((assetId: string) => {
             if(assetId != "null") {
                 staticSprites.push(
-                    MapTileInstantiator.static(assetId, new Pos2(j * AssetManager.getDefaultAssetWidth(), i * AssetManager.getDefaultAssetWidth()))
+                    MapTileInstantiator.static(assetId, new Vec2(j * AssetManager.getDefaultAssetWidth(), i * AssetManager.getDefaultAssetWidth()))
                 );
             }
             j++;
@@ -148,7 +170,7 @@ function createGameLevelObject(gameLevelJson: any): GameLevel {
         row.forEach((assetId: string) => {
             if(assetId != "null") {
                 let newTile: DynamicTile | undefined = undefined;
-                newTile = MapTileInstantiator.dynamic(assetId, new Pos2(j * AssetManager.getDefaultAssetWidth(), i * AssetManager.getDefaultAssetWidth()));
+                newTile = MapTileInstantiator.dynamic(assetId, new Vec2(j * AssetManager.getDefaultAssetWidth(), i * AssetManager.getDefaultAssetWidth()));
 
                 if(newTile != undefined) dynamicSprites.push(newTile);
                 else throw new Error(); // stop loading level - load file is incorrect
@@ -160,12 +182,13 @@ function createGameLevelObject(gameLevelJson: any): GameLevel {
     // the `dynamicSprites` variable is now populated
 
     // load other two fields
-    let spawnPos: Pos2 = new Pos2(parseInt(gameLevelJson["spawnPos"]["x"]), parseInt(gameLevelJson["spawnPos"]["y"]));
+    let spawnPos: Vec2 = new Vec2(parseInt(gameLevelJson["spawnPos"]["x"]), parseInt(gameLevelJson["spawnPos"]["y"]));
     let hasWalls: boolean = gameLevelJson["hasWalls"] === "true" ? true : false;
 
     
 
     let level: GameLevel = new GameLevel(
+        stage,
         staticSprites,
         dynamicSprites,
         hasWalls,
