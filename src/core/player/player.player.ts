@@ -1,12 +1,16 @@
-import { Circle, Container, DisplayObject, Sprite, Texture } from "pixi.js";
+import { Circle, Container, DisplayObject, FederatedPointerEvent, Sprite, Texture } from "pixi.js";
 import { Vec2 } from "../../util/vector.util";
 import { GameLevel } from "../../map/level.map";
+import { LaunchLine } from "./launch-line.player";
 
 export class GamePlayer {
     private _sprite: Sprite;
     private _texture: Texture;
     private _position: Vec2;
     private _velocity: Vec2;
+
+    private _launchLine: LaunchLine;
+    private _lastMousePos: Vec2;
 
     private _mouseIsDown: boolean = false;
 
@@ -19,6 +23,10 @@ export class GamePlayer {
         this.sprite.y = this._position.y;
  
         this._velocity = new Vec2(0, 0);
+
+        this._launchLine = new LaunchLine();
+        this._launchLine.hide();
+        this._lastMousePos = new Vec2(0, 0);
         
 
 
@@ -28,9 +36,8 @@ export class GamePlayer {
         this._sprite.anchor.x = 0.5;
         this._sprite.anchor.y = 0.5;
 
-        this._sprite.on("mousedown", (e) => {
-            this._mouseIsDown = true;
-        });
+        this._sprite.on("mousedown", (e: FederatedPointerEvent) => this.onMouseDown(e));
+    
 
         stage.on("mouseup", (e) => {
             if(this._mouseIsDown) {
@@ -43,18 +50,25 @@ export class GamePlayer {
                 this._mouseIsDown = false;
             }
         });
+
+        stage.on("mousemove", (e: FederatedPointerEvent) => this.onMouseMove(e));
     }
 
     public get sprite(): Sprite {
         return this._sprite;
     }
 
+    public get launchLine(): LaunchLine {
+        return this._launchLine;
+    }
+
+
+
     /*
      * This method requires the game level. This object can be accessed to see local dynamic tiles / the edge of the map, and
      * this data will be used to influence the movement of the player.
      */
     update(level: GameLevel): void {
-
         // adjust velocity here
         this._position.x += this._velocity.x;
         this._position.y += this._velocity.y;
@@ -68,6 +82,10 @@ export class GamePlayer {
         if(Math.abs(this._velocity.y) < 0.5) this._velocity.y = 0;
         
     }
+
+
+
+
 
     isMoving(): boolean {
         return !(this._velocity.x == 0 && this._velocity.y == 0);
@@ -89,6 +107,8 @@ export class GamePlayer {
         console.log("-------------------------------")
         */
 
+        this._launchLine.hide(); // call before move checks because it should be hidden anyway
+
         if(this.isMoving()) return; // Don't launch if already moving.
 
         // the difference between the player and the mouse
@@ -103,11 +123,29 @@ export class GamePlayer {
     }
 
 
+
+
+
+
     /*
      * Sets `this._sprite` position to `this._position`.
      */
     private updateSpritePosition(): void {
         this._sprite.position.x = this._position.x;
         this._sprite.position.y = this._position.y;
+    }
+
+
+    private onMouseDown(event: FederatedPointerEvent): void {
+        this._mouseIsDown = true
+    }
+
+    private onMouseMove(event: FederatedPointerEvent): void {
+        this._lastMousePos = new Vec2(event.x, event.y);
+
+        if(this._mouseIsDown) {
+            this._launchLine.draw(this._position, this._lastMousePos);
+            this._launchLine.show();
+        }
     }
 }

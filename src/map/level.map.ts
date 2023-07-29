@@ -42,9 +42,12 @@ export class GameLevel {
         this.generateStaticTileContainer();
         this.generateDynamicTileContainer();
 
+        // NOTE: Order of addChild() is IMPORTANT. Only call add child in this function. Don't start calling it elsewhere.
+
         this._stage.addChild(this._staticTileContainer);
         this._stage.addChild(this._dynamicTileContainer);
 
+        this._stage.addChild(this._player.launchLine.getGraphics());
         this._stage.addChild(this._player.sprite);
     }
 
