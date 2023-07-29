@@ -1,6 +1,6 @@
 import { BlurFilter, Texture } from "pixi.js";
 import { DynamicTile } from "../dynamic-tile.map";
-import { Pos2 } from "../../../util/position.util";
+import { Vec2 } from "../../../util/vector.util";
 import { GameLevel } from "../../level.map";
 import { AssetManager } from "../../../core/asset-manager.core";
 
@@ -10,7 +10,7 @@ export class DT_StartIndicator extends DynamicTile {
     private life: number = 1.3;
     private blurFilter: BlurFilter = new BlurFilter();
 
-    constructor(startPos: Pos2) {
+    constructor(startPos: Vec2) {
         super(AssetManager.i().getAssetQuery(DT_StartIndicator.assetQuery), startPos);
 
         this.blurFilter.blur = 0;
@@ -36,7 +36,7 @@ export class DT_StartIndicator extends DynamicTile {
         
     }
 
-    isColliding(ballPos: Pos2, level: GameLevel): boolean {
+    isColliding(ballPos: Vec2, level: GameLevel): boolean {
         return false;
     }
 }

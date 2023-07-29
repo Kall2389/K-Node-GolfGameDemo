@@ -1,13 +1,13 @@
 import { Sprite, Texture } from "pixi.js";
-import { Pos2 } from "../../util/position.util";
+import { Vec2 } from "../../util/vector.util";
 
 export class MapTile {
     private _texture: Texture;
-    private _position: Pos2;
+    private _position: Vec2;
 
     private _sprite: Sprite | undefined;
 
-    constructor(texture: Texture, pos: Pos2) {
+    constructor(texture: Texture, pos: Vec2) {
         this._texture = texture;
         this._position = pos;
 
@@ -32,7 +32,7 @@ export class MapTile {
         return this.texture;
     }
 
-    public get position(): Pos2 {
+    public get position(): Vec2 {
         return this._position;
     }
 

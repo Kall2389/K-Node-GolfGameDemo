@@ -1,6 +1,6 @@
 import { Texture } from "pixi.js";
 import { MapTile } from "./tile.map";
-import { Pos2 } from "../../util/position.util";
+import { Vec2 } from "../../util/vector.util";
 
 /*
  * A placeholder class holding fields for static tiles on the map, such as background tiles.
