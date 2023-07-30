@@ -60,7 +60,6 @@ export class Vec2 {
     }
 
     mult(x: number, y: number): Vec2 {
-        console.log("x" + this._x + "   y" + this._y)
         return new Vec2(this._x * x, this._y * y);
     }
 
